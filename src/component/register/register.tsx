@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 // import { useNavigate } from "react-router";
 
 import * as Yup from "yup";
@@ -12,9 +12,6 @@ import { auth, db, provider } from "../firebase/firebase";
 import { addDoc, collection } from "firebase/firestore";
 
 const Register = () => {
-    const [authing, setAuthing] = useState(false);
-
-
     interface FormValues {
         email: string;
         password: string;
@@ -47,11 +44,7 @@ const Register = () => {
         try {
             const res = await createUserWithEmailAndPassword(auth, email, password);
             const user = res.user;
-            const docRef = await addDoc(collection(db, "users"), {
-                uid: user.uid,
-                email: loginvalue.email,
-                password: loginvalue.password
-            });
+
         } catch (err: any) {
             console.error(err);
             alert(err.message);
@@ -60,7 +53,6 @@ const Register = () => {
     };
 
     const signInWithGoogle = async () => {
-        setAuthing(true);
 
         try {
             const res = await signInWithPopup(auth, provider);
@@ -72,13 +64,9 @@ const Register = () => {
                 email:user.email,
                 photoURL:user.photoURL,
             };
-            console.log(">>>>>>>>>>>",newUser);
-            localStorage.setItem("user", JSON.stringify(newUser));
-            const docRef = await addDoc(collection(db, "users"), {newUser});
         } catch (err: any) {
             console.error(err);
             alert(err.message);
-            setAuthing(false)
         }
     };
 
@@ -130,7 +118,7 @@ const Register = () => {
                             </button>
                         </Link>
                         <div className="googlesignin">
-                            <button onClick={() => signInWithGoogle()} disabled={authing}>
+                            <button onClick={() => signInWithGoogle()}>
                                 Sign in with Google
                             </button>
 

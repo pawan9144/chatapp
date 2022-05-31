@@ -5,7 +5,7 @@ import Message from '../message/message'
 import "./thread.css"
 import { useParams } from 'react-router-dom'
 import TelegramDataService from "../../service/service"
-import { collection, getDoc, getDocs } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, onSnapshot } from 'firebase/firestore'
 import { db} from '../firebase/firebase'
 import Picker from 'emoji-picker-react';
 
@@ -34,8 +34,14 @@ const Thread = () => {
     //     getCities(chatID)
     // }, [chatID]);
 
-    const getdata = async () => {
-
+    const getdata = async (id:any) => {
+    //     const getchatdata = doc(db, "chats", id);
+    //     let colRef = collection(getchatdata, "messages")
+    //     const unsubscribe = onSnapshot(colRef, (querySnapshot) => {
+    //         querySnapshot?.docChanges().forEach((item : any)=>{
+    //             setUserDetails(item.doc.data());
+    //         })
+    // })
         const docSnap: any = await TelegramDataService.getchat(chatID);
         setUserDetails(docSnap.data());
 
@@ -43,7 +49,7 @@ const Thread = () => {
 
     useEffect(() => {
         if (chatID !== undefined && chatID !== "") {
-            getdata();
+            getdata(chatID);
         }
     }, [chatID]);
 
@@ -75,26 +81,38 @@ const Thread = () => {
     const sendMessage = async (e: any) => {
         e.preventDefault();
         if (chatID !== undefined && chatID !== "") {
-            await TelegramDataService.Addmessages(chatID, addMessage);
+            let send = await TelegramDataService.Addmessages(chatID, addMessage).then(()=>getmessagedata(chatID));
             setInput("");
-
         }
 
     }
 
 
-    const getmessagedata = async () => {
+    const getmessagedata = async (id:any) => {
 
-        const docnap: any = await TelegramDataService.getMessages(chatID);
-        setMessages(docnap.docs.map((doc: any) => ({ ...doc.data(), id: doc.id })));
+
+        const getchatdata = doc(db, "chats", id);
+            let colRef = collection(getchatdata, "messages")
+            const unsubscribe = onSnapshot(colRef, (querySnapshot) => {
+                let array:any = []
+                querySnapshot?.docChanges().forEach((item : any)=>{
+                    // console.log("aayush",item.doc.data().message)
+                    array.push(item.doc.data());
+                })
+                setMessages(array);
+        })
+        // const docnap: any = await TelegramDataService.getMessages(chatID);
+        // setMessages(docnap.docs.map((doc: any) => ({ ...doc.data(), id: doc.id })));
 
     };
-
+    // useEffect(()=>{
+    //     console.log("aayush",messages)
+    // },[messages])
 
 
     useEffect(() => {
         if (chatID !== undefined && chatID !== "") {
-            getmessagedata();
+            getmessagedata(chatID);
         }
     }, [chatID]);
 
@@ -106,7 +124,8 @@ const Thread = () => {
                     <Avatar />
 
                     <div className='thread__headerDetails_info'>
-                        <h4>{userDetails?.chatName}</h4>
+                        <h4>{
+                        userDetails?.chatName}</h4>
                         <h5>Just Now</h5>
 
                     </div>
@@ -119,9 +138,8 @@ const Thread = () => {
             <div className='thread__messages'>
                 <>
                     {messages.map((item: any) => {
-
-
                         return (<Message
+                            key={item.id}
                             id={item.id}
                             message={item}
                         />

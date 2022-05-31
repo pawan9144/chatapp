@@ -8,10 +8,14 @@ import {
   deleteDoc,
   doc,
   serverTimestamp,
+  onSnapshot,
+  setDoc,
+  Timestamp,
 } from "firebase/firestore";
 import { AnyRecord } from "dns";
 
 const telegramdata= collection(db, "chats");
+const telegramuserdata= collection(db, "users");
 class TelegramDataService {
  
  
@@ -23,14 +27,19 @@ class TelegramDataService {
   Addmessages = (id:any, addMessage:any) => {
     console.log(">>>>>>>>>>>>>",id)
      const addmessagedata = doc(db, "chats", id);
-     const colRef:any = collection(addmessagedata, "messages")
-     return addDoc(colRef,addMessage);
+     let timestamp = Timestamp.fromDate(new Date())
+     const colRef:any = collection(addmessagedata, "messages");
+     const minor:any = doc(colRef,timestamp.seconds.toString())
+     return setDoc(minor,addMessage);
+
+    //  return addDoc(colRef,addMessage);
    }; 
   
 
   getMessages = (id:any) => {
     const getchatdata = doc(db, "chats", id);
     const colRef = collection(getchatdata, "messages")
+    // return new Promise(resolve=>onSnapshot(colRef,resolve))
     return getDocs(colRef);
   };
 
@@ -43,6 +52,20 @@ class TelegramDataService {
     const getchatdata = doc(db, "chats", id);
     return getDoc(getchatdata);
   };
+
+
+
+  getAlluser = () => {
+    return getDocs(telegramuserdata);
+  };
+
+
+
+  // updateBook = (id, updatenotification) => {
+  //   const bookDoc = doc(db, "books", id);
+  //   return updateDoc(bookDoc, updatenotification);
+  // };
+
 }
 
 export default new TelegramDataService();

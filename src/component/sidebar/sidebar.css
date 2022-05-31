@@ -75,4 +75,50 @@
     display: none;
   }
   
+
+  .notificationbell{
+    margin: 5px;
+    font-size: xx-large;
+    color: #fff;
+  }
   
+
+
+  .box {
+    text-align: left;
+    border-radius: 10px;
+    margin: 3px !important;
+    padding-left: 10px;
+    background: aliceblue;
+    cursor: pointer;
+  }
+  .box>p{
+    margin: 0px;
+    padding: 2px;
+  }
+
+
+  .sendrequest{
+    float: right;
+    background-color: #6396ee;
+    margin-right: 10px;
+    color: #fff;
+    border-radius: 7px;
+  }
+
+
+  .notificationpopup{
+    text-align: left;
+    border-radius: 10px;
+    background: aliceblue;
+    cursor: pointer;
+  }
+
+
+  .notificationpopupbtn{
+    background-color: #6396ee;
+    color: #fff;
+    border-radius: 7px;
+    padding: 5px;
+    margin-left: 2px;
+  }

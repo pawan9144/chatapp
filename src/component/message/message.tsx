@@ -17,10 +17,9 @@ import "./message.css"
 const Message = (props:any) => {
     const{photoUrl,message,uid}=props.message
  const messageClass = uid === auth?.currentUser?.uid ? 'message__sender' : 'received';
-
     return (
         <>
-        <div className={`message ${messageClass}`}>
+        <div className={`message ${messageClass}`} >
             <Avatar className='message_photo' src={photoUrl} alt="img" />
             <div className='message__contents'>
 

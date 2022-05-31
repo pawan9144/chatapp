@@ -84,3 +84,39 @@
 // }
 
 // export default Login
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// onClick={() => setShow(!show)}
+
+
+
+
+
+
+
+
+
+
+// onClick={() => sendrequest(post.data().newUser?.uid)}

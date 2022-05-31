@@ -150,7 +150,7 @@ import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, db, provider } from "../firebase/firebase";
 import { addDoc, collection } from "firebase/firestore";
 
-const Login = () => {
+const Login = ({refresh}:any) => {
     const [authing, setAuthing] = useState(false);
 
 
@@ -195,6 +195,7 @@ const Login = () => {
             };
             console.log(">>>>>>>>>>>",newUser);
             localStorage.setItem("user", JSON.stringify(newUser));
+            refresh(Math.random());
             const docRef = await addDoc(collection(db, "users"), {newUser});
         } catch (err:any) {
             console.error(err);
@@ -217,8 +218,9 @@ const Login = () => {
                 email:user.email,
                 photoURL:user.photoURL,
             };
-            console.log(">>>>>>>>>>>",newUser);
             localStorage.setItem("user", JSON.stringify(newUser));
+            refresh(Math.random());
+
             const docRef = await addDoc(collection(db, "users"), {newUser});
         } catch (err: any) {
             console.error(err);
