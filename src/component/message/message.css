@@ -39,13 +39,20 @@
   .message__sender {
     margin-left: auto;
     margin-right: 10px;
+    flex-flow: row-reverse;
   }
   
   .message__sender > .message__contents {
     background-color: rgb(2, 150, 199);
+    margin-right: auto;
+    float: left;
   }
   
-  .message__sender > .message__photo {
+  .message__sender >.message__photo {
     order: 1;
     margin: 15px;
+
+  }
+  .readunraedmsgsen{
+   color: #69ff6e ;
   }

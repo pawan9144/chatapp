@@ -44,13 +44,13 @@
 //     const handleSubmit = async (event:Event) => {
 
 //         event.preventDefault()
-        // try {
-        //     const res = await signInWithEmailAndPassword(auth, initialValues.email, initialValues.password);
-        //     // console.log("//////////////", res)
-        // } catch (err:any) {
-        //     console.error(err);
-        //     alert(err.message);
-        // }
+// try {
+//     const res = await signInWithEmailAndPassword(auth, initialValues.email, initialValues.password);
+//     // console.log("//////////////", res)
+// } catch (err:any) {
+//     console.error(err);
+//     alert(err.message);
+// }
 
 //     };
 //     const signInWithGoogle = async () => {
@@ -103,9 +103,9 @@
 //                                 </button>
 //                             </Form>
 //                         </div>
-                       
+
 //                     </Formik>
-                   
+
 //                     <div className="right">
 //                         <h1>New Here ?</h1>
 
@@ -122,7 +122,7 @@
 //                 </div>
 //                     </div>
 //                 </div>
-               
+
 
 
 //             </div>
@@ -146,18 +146,18 @@ import * as Yup from "yup";
 import { Formik, Form, ErrorMessage, Field } from "formik";
 // import { toast } from "react-toastify";
 import "./login.css"
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, db, provider } from "../firebase/firebase";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, query, setDoc, where } from "firebase/firestore";
 
-const Login = ({refresh}:any) => {
+const Login = ({ refresh }: any) => {
     const [authing, setAuthing] = useState(false);
 
 
     interface FormValues {
         email: string;
         password: string;
-      }
+    }
     // const navigate = useNavigate();
     const loginvalue = {
         email: "",
@@ -184,20 +184,20 @@ const Login = ({refresh}:any) => {
     const handleSubmit = async (loginvalue: FormValues) => {
         const { email, password } = loginvalue
         try {
-            const res = await signInWithEmailAndPassword(auth, email,password);
+            const res = await signInWithEmailAndPassword(auth, email, password);
             const user = res.user;
-            
             const newUser = {
                 uid: user.uid,
-                fullname:user.displayName,
-                email:user.email,
-                photoURL:user.photoURL,
+                fullname: user.displayName,
+                email: user.email,
+                photoURL: user.photoURL,
             };
-            console.log(">>>>>>>>>>>",newUser);
             localStorage.setItem("user", JSON.stringify(newUser));
             refresh(Math.random());
-            const docRef = await addDoc(collection(db, "users"), {newUser});
-        } catch (err:any) {
+            // const docRef = await addDoc(collection(db, "users"), { newUser });
+            const ref = doc(db, 'users', user?.uid)
+            setDoc(ref, { newUser })
+        } catch (err: any) {
             console.error(err);
             alert(err.message);
         }
@@ -211,23 +211,25 @@ const Login = ({refresh}:any) => {
         try {
             const res = await signInWithPopup(auth, provider);
             const user = res.user;
-            
             const newUser = {
                 uid: user.uid,
-                fullname:user.displayName,
-                email:user.email,
-                photoURL:user.photoURL,
+                fullname: user.displayName,
+                email: user.email,
+                photoURL: user.photoURL,
             };
             localStorage.setItem("user", JSON.stringify(newUser));
             refresh(Math.random());
-
-            const docRef = await addDoc(collection(db, "users"), {newUser});
+            // const docRef = await addDoc(collection(db, 'users'), {newUser});
+            const ref = doc(db, 'users', user?.uid)
+            setDoc(ref, { newUser })
         } catch (err: any) {
             console.error(err);
             alert(err.message);
             setAuthing(false)
         }
     };
+
+
 
     return (
         <div>

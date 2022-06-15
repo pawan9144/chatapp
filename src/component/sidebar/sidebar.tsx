@@ -10,7 +10,7 @@ import { auth, db } from '../firebase/firebase';
 import { signOut } from "firebase/auth";
 import TelegramDataService from "../../service/service"
 import { Overlay, Popover } from 'react-bootstrap';
-import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -22,14 +22,13 @@ import { useNavigate } from 'react-router-dom';
 const Sidebar = () => {
   const [show, setShow] = useState<boolean>(false);
   const [chats, setChats] = useState([]);
-  const [notification, setNotification] = useState([]);
+  const [notification, setNotification] = useState<any>([]);
   const [allUsers, setAllUsers] = useState([]);
   const [searchInput, setSearchInput] = useState("");
 
   const [target, setTarget] = useState(null);
   const [refresh, setRefresh] = useState(0)
   const navigate = useNavigate();
-
 
   const [mQuery, setMQuery] = useState({
     matches: window.innerWidth > 600 ? true : false,
@@ -38,11 +37,11 @@ const Sidebar = () => {
 
   const { email, fullname, photoURL, uid } = user
 
-
   const handleshow = (event: any) => {
     setShow(!show)
     setTarget(event.target);
   }
+
 
   useEffect(() => {
     let mediaQuery = window.matchMedia("(min-width: 768px)");
@@ -72,14 +71,32 @@ const Sidebar = () => {
   //     }
   //     getCities()
   // }, []);
+  // useEffect(() => {
+  //   getchats();
+  // }, []);
+
+  // const getchats = async () => {
+  //   const data: any = await TelegramDataService.getAllChats();
+  //   setChats(data.docs.map((doc: any) => ({ ...doc.data(), id: doc.id })));
+  // };
+
+
+
   useEffect(() => {
-    getchats();
+    const citiesCol = collection(db, 'chats');
+    const unsubscribe = onSnapshot(citiesCol, (querySnapshot) => {
+      let array: any = []
+      querySnapshot?.docChanges().forEach((item: any) => {
+
+        array.push({ ...item.doc.data(), id: item.doc.id });
+      })
+      setChats(array);
+    })
   }, []);
 
-  const getchats = async () => {
-    const data: any = await TelegramDataService.getAllChats();
-    setChats(data.docs.map((doc: any) => ({ ...doc.data(), id: doc.id })));
-  };
+
+
+
 
   // const addChat = () => {
 
@@ -96,17 +113,17 @@ const Sidebar = () => {
   // }
 
 
-  const addChat = async () => {
+  // const addChat = async () => {
 
-    const chatName = prompt('Please enter a chat name')
-    const addChat = {
-      chatName: chatName
+  //   const chatName = prompt('Please enter a chat name')
+  //   const addChat = {
+  //     chatName: chatName
 
-    };
-    if (addChat) {
-      await TelegramDataService.addChats(addChat);
-    }
-  }
+  //   };
+  //   if (addChat) {
+  //     await TelegramDataService.addChats(addChat);
+  //   }
+  // }
 
 
 
@@ -134,6 +151,15 @@ const Sidebar = () => {
   };
 
 
+  const searchedUser = allUsers.filter((post: any) => {
+    if (searchInput === "") {
+      return post;
+    } else if (post.data().newUser?.email?.toLowerCase().includes(searchInput.toLowerCase())) {
+      return post;
+    }
+  });
+
+
   // const searchedUser = allUsers.filter((user: any) => {
   //   // const searchfilter = user.data().newUser?.fullname
   //   // console.log(">>>>>>>>>>>>>>",searchfilter)
@@ -152,6 +178,7 @@ const Sidebar = () => {
 
 
   const sendrequest = async (id: any) => {
+
     try {
       if (id !== undefined && id !== "") {
         await addDoc(collection(db, "notification"), {
@@ -187,14 +214,17 @@ const Sidebar = () => {
 
   ////////////////
 
+  // const check:any = notification[0]
+  //   console.log("pawan......",check?.friendid)
+  //   console.log("pawan......",check?.senderuid)
+
+
 
   const Reject = async (id: any) => {
     try {
       if (id !== undefined && id !== "") {
         const noteRef = doc(db, "notification", id);
-        await updateDoc(noteRef, {
-          status: "Reject"
-        });
+        await deleteDoc(noteRef);
       }
     } catch (err: any) {
       console.log({ error: true, msg: err.message });
@@ -206,12 +236,20 @@ const Sidebar = () => {
 
   const Accept = async (id: any, p: any) => {
     try {
-      console.log("????????????????", p);
+      const addChat = {
+        frndid: p.friendid,
+        sendid: p.senderuid,
+        frined: false,
+        timestamp: serverTimestamp(),
+      };
       if (id !== undefined && id !== "") {
         const noteRef = doc(db, "notification", id);
         await updateDoc(noteRef, {
           status: "Accept"
-        });
+        })
+      }
+      if (addChat) {
+        await TelegramDataService.addChats(addChat);
       }
     } catch (err: any) {
       console.log({ error: true, msg: err.message });
@@ -223,6 +261,20 @@ const Sidebar = () => {
 
 
 
+
+
+//   function NotificationCount() {
+//     let db = firebase.database().ref('notifications');
+
+//     db.orderByChild('sendTo').equalTo(currentUserKey).on('value', function (noti) {
+        // let notiArray = Object.values(noti.val()).filter(n => n.status === 'Pending');
+        // document.getElementById('notification').innerHTML = notiArray.length;
+//     });
+// }
+
+  let notiArray = notification.filter((n:any)=>{
+    return n.status==="pending" && n.senderuid!==uid;
+  });
 
 
   return (
@@ -248,15 +300,16 @@ const Sidebar = () => {
 
               </div>
               <div className='sidebar__button'>
-                <AiOutlineUserAdd onClick={addChat} />
+                {/* <AiOutlineUserAdd onClick={addChat} /> */}
+
+                <AiOutlineUserAdd />
 
                 {/* <AiOutlineUserAdd onClick={toggle}/> */}
                 {/* <Showmodal isOpen={isOpen} toggle={toggle}/> */}
               </div>
 
-
             </div>
-            {searchInput.length > 0 &&
+            {/* {searchInput.length > 0 &&
               <div>
                 {allUsers.filter((post: any) => {
                   if (searchInput === "") {
@@ -270,8 +323,34 @@ const Sidebar = () => {
                   </div>
                 ))}
               </div>
-            }
+            } */}
 
+
+
+            {searchInput.length > 0 &&
+              searchedUser.map((post: any, index) => {
+                const check: any = notification[0];
+
+                if (!notification || notification?.length < 1 || check?.status === "Reject") {
+                  return <div className="box" key={index}>
+                    <p>{post.data().newUser?.email} <span className="sendrequest" onClick={() => sendrequest(post?.id)}>Sent Request</span></p>
+                  </div>;
+
+                }
+                if (check?.friendid === uid) {
+                  return <div className="box" key={index}>
+                    <p>{post.data().newUser?.email} <span className="sendrequest">{check?.status === "Accept" ? 'friends' : 'Pending'}</span></p>
+                  </div>;
+                }
+                if (check?.senderuid === uid) {
+                  return <div className="box" key={index}>
+                    <p>{post.data().newUser?.email} <span className="sendrequest" >{check?.status === "Accept" ? 'friends' : 'Sent'}</span></p>
+                  </div>
+                }
+              })
+
+            }
+            {/* if(notification && notification.lengt>=0) */}
 
 
 
@@ -279,12 +358,20 @@ const Sidebar = () => {
               {/* <Sidebarthread chatAdded={newChatAdded} /> */}
               <>
                 {chats.map((item: any) => {
+                  var friendKey = '';
+                  if (item.frndid === uid) {
+                    friendKey = item.sendid;
 
-
-                  return (<Sidebarthread
+                  }
+                  else if (item.sendid === uid) {
+                    friendKey = item.frndid;
+                  }
+                  return (friendKey && <Sidebarthread
                     id={item.id}
                     key={item.id}
-                    chatName={item.chatName}
+                    friend={friendKey}
+                    timestamp={item.timestamp}
+
                   />
                   )
                 })}
@@ -294,8 +381,15 @@ const Sidebar = () => {
             </div>
             <div className='sidebar_bottom'>
               <Avatar className='sidebar__bottom_avatar' src={photoURL} alt="ser" />
-
-              <AiOutlineBell className='notificationbell' onClick={handleshow} />
+              <div>
+                <div>
+                  <AiOutlineBell className='notificationbell' onClick={handleshow} />
+                </div>
+                {notiArray ==="" &&<div className='notnumber'>
+                  <p>{notiArray.length}</p>
+                </div>
+                }
+              </div>
               <button onClick={signout}>Logout</button>
 
             </div>
@@ -305,17 +399,21 @@ const Sidebar = () => {
                 <Popover>
 
                   <Popover.Body>
-                    {notification.map((post: any, index: any) => {
-                      if (post.status === "pending") {
+                    {!notification || notification?.length < 1 || notification.status === "pending"? <div>No Data Available..</div> : notification.map((post: any, index: any) => {
+                      if (post.status === "pending" && post.senderuid !== uid) {
                         return <div className="notificationpopup" key={index}>
                           <p>{post.email} </p>
                           <p>
                             <span className="notificationpopupbtn" onClick={() => Reject(post.id)} >Reject</span>
-                            <span className="notificationpopupbtn" onClick={() => Accept(post.id,post)}>Accept</span>
+                            <span className="notificationpopupbtn" onClick={() => Accept(post.id, post)}>Accept</span>
                           </p>
 
                           {/* <p>{post.value}</p> */}
                         </div>;
+                      }
+                      if (post.status === "Reject" || post.status === "Accept") {
+                        return <div>No Data Available....</div>
+
                       }
 
                     })}

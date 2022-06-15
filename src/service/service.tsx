@@ -25,7 +25,6 @@ class TelegramDataService {
   };
 
   Addmessages = (id:any, addMessage:any) => {
-    console.log(">>>>>>>>>>>>>",id)
      const addmessagedata = doc(db, "chats", id);
      let timestamp = Timestamp.fromDate(new Date())
      const colRef:any = collection(addmessagedata, "messages");
@@ -50,6 +49,13 @@ class TelegramDataService {
 
   getchat = (id:any) => {
     const getchatdata = doc(db, "chats", id);
+    return getDoc(getchatdata);
+  };
+
+
+
+  getchatuser = (id:any) => {
+    const getchatdata = doc(db, "users", id);
     return getDoc(getchatdata);
   };
 

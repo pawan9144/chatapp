@@ -1,6 +1,8 @@
 import { Avatar } from '@mui/material'
-import React from 'react'
-import { auth } from '../firebase/firebase'
+import { doc, updateDoc } from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+import { AiFillCheckCircle } from 'react-icons/ai'
+import { auth, db } from '../firebase/firebase'
 import "./message.css"
 
 
@@ -13,23 +15,27 @@ import "./message.css"
 //     photoUrl:string,
 //     uid:string,
 //     }
-    
-const Message = (props:any) => {
-    const{photoUrl,message,uid}=props.message
- const messageClass = uid === auth?.currentUser?.uid ? 'message__sender' : 'received';
+
+const Message = (props: any) => {
+    const { photoUrl, message, uid, isread, id, timestamp } = props.message
+
+
+    const messageClass = uid === auth?.currentUser?.uid ? 'message__sender' : 'received';
     return (
         <>
-        <div className={`message ${messageClass}`} >
-            <Avatar className='message_photo' src={photoUrl} alt="img" />
-            <div className='message__contents'>
+            <div className={`message ${messageClass}`} >
+                <div className='message_photo'>
 
-                <p className='message_content'>{message}</p>
-                <small className='message_timestamp'>timestamp</small>
+                    <Avatar src={photoUrl} alt="img" />
+                </div>
+                <div className='message__contents'>
+                    <p className='message_content'><span><AiFillCheckCircle className={isread ? "readunraedmsgsen" : "readunraedmsgrec"} /></span>{message}</p>
+                    <small className='message_timestamp'>{new Date(timestamp?.toDate())?.toLocaleString()}</small>
+                </div>
+
             </div>
-
-        </div>
         </>
-        
+
     )
 }
 
